@@ -122,7 +122,6 @@ of require statements in major-mode-hooks.el"
   (interactive (list major-mode))
   (let* ((acting-mode-name (symbol-name mode))
 	 (major-mode-file-dir (file-truename auto-mode-files/mode-files-dir))
-	 (major-hooks-file (concat major-mode-file-dir "/major-mode-hooks.el"))
 	 (hook-file-path (concat major-mode-file-dir "/" acting-mode-name ".el")))
     (if (file-exists-p hook-file-path)
 	(find-file hook-file-path)
