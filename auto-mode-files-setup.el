@@ -1,17 +1,17 @@
-(defvar yf/major-mode-hooks-dir
+(defvar auto-mode-files/mode-files-dir
   ;; Support for no-littering.el without any interference 
   (if (file-exists-p (concat user-emacs-directory "etc/"))
-      (concat user-emacs-directory "etc/major-hooks/")
-    (concat user-emacs-directory "major-hooks/"))
+      (concat user-emacs-directory "etc/auto-mode-files/")
+    (concat user-emacs-directory "auto-mode-files/"))
   "The directory that is used for major mode configuration files.")
 
-(defun yf-major-mode-hooks--make-table ()
-  "Builds the hash table for `yf/major-mode-hooks--table'
+(defun auto-mode-files--make-table ()
+  "Builds the hash table for `auto-mode-files--table'
 It should be noted that this function does nothing to actually populate
-said table; that should be done with `yf-major-mode-hooks--populate-table',
-usually called through `yf-major-mode-hooks-refresh'."
-  (unless (file-exists-p yf/major-mode-hooks-dir) (make-directory yf/major-mode-hooks-dir))
-  (let ((dir-list (directory-files yf/major-mode-hooks-dir)))
+said table; that should be done with `auto-mode-files--populate-table',
+usually called through `auto-mode-files-refresh'."
+  (unless (file-exists-p auto-mode-files/mode-files-dir) (make-directory yf/major-mode-hooks-dir))
+  (let ((dir-list (directory-files auto-mode-files/mode-files-dir)))
     ;;Weakness determines the garbage collection rate;
     ;;key-and-value requires that both a key and value
     ;;be present in order to avoid garbage collection
@@ -22,8 +22,8 @@ usually called through `yf-major-mode-hooks-refresh'."
 		     :rehash-size 1.1
 		     :rehash-threshold 0.9)))
 
-(defvar yf/major-mode-hooks--table
-  (yf-major-mode-hooks--make-table)
+(defvar auto-mode-files--table
+  (auto-mode-files--make-table)
   "The table to keep track of which modes have
 files that should be loaded after they open
 
@@ -33,8 +33,8 @@ but hopefully in the future this will be part of the file
 name, as a way to allow multiple files to be loaded in
 whatever order the user desires.")
 
-(defun yf-major-mode-hooks--populate-table ()
-  "Populates `yf/major-mode-hooks--table' with the files in `yf/major-mode-hooks-dir'"
+(defun auto-mode-files--populate-table ()
+  "Populates `auto-mode-files--table' with the files in `auto-mode-files/mode-files-dir'"
   (cl-flet* ((get-mode-symbol (lambda (filename)
 				(intern
 				 (file-name-nondirectory
@@ -42,8 +42,8 @@ whatever order the user desires.")
 	     (put-hash-hooks-table (lambda (filename)
 				     (puthash (get-mode-symbol filename)
 					      (file-truename filename)
-					      yf/major-mode-hooks--table))))
-    (let* ((dir-list (directory-files yf/major-mode-hooks-dir))
+					      auto-mode-files--table))))
+    (let* ((dir-list (directory-files auto-mode-files/mode-files-dir))
 	   (el-list (seq-filter (lambda (filtee)
 				  (string= "el" (file-name-extension filtee)))
 				dir-list))
@@ -60,51 +60,51 @@ whatever order the user desires.")
       (mapc (lambda (a) (put-hash-hooks-table a)) el-list)
       (mapc (lambda (a) (put-hash-hooks-table a)) elc-list))))
 
-(defun yf-major-mode-hooks-refresh ()
+(defun auto-mode-files-refresh ()
   "Refresh the state of the files in 
-Clears `yf/major-mode-hooks--table' and then populates it
-with `yf-major-mode-hooks--populate-table'."
+Clears `auto-mode-files--table' and then populates it
+with `auto-mode-files--populate-table'."
   (interactive)
   ;; Flush out the old values to make
   ;; available for garbage collection
-  (clrhash yf/major-mode-hooks--table) 
+  (clrhash auto-mode-files--table) 
   ;; Make a new table to avoid a bunch
   ;; of resizing if the new set is massively bigger
-  (setq yf/major-mode-hooks--table (yf-major-mode-hooks--make-table))
+  (setq auto-mode-files--table (auto-mode-files--make-table))
   ;; Populate the new table
-  (yf-major-mode-hooks--populate-table))
+  (auto-mode-files--populate-table))
 
-;; To allow the user to set `yf/major-mode-hooks-dir' after
+;; To allow the user to set `auto-mode-files/mode-files-dir' after
 ;; loading this file and not have to worry about running
 ;; the refresh function twice on startup
-(add-hook 'after-init-hook 'yf-major-mode-hooks-refresh)
+(add-hook 'after-init-hook 'auto-mode-files-refresh)
 
-(defun yf-major-mode-hooks--run-symbol-internal (symbol)
+(defun auto-mode-files--run-symbol-internal (symbol)
   "Not to be used externally!
 
-Essentialy the same thing as `yf-major-mode-hooks-run-symbol',
+Essentialy the same thing as `auto-mode-files-run-symbol',
 however it doesn't throw an error on a non-existant file"
-  (let ((file-name (gethash symbol yf/major-mode-hooks--table)))
+  (let ((file-name (gethash symbol auto-mode-files--table)))
     (if file-name
 	(load-file file-name)
       nil)))
 
-(defun yf-major-mode-hooks-run-symbol (symbol)
-  "Runs the file matching SYMBOL in `yf/major-mode-hooks-dir'
+(defun auto-mode-files-run-symbol (symbol)
+  "Runs the file matching SYMBOL in `auto-mode-files/mode-files-dir'
 Note: this function cannot be called before startup without
-running `yf-major-mode-hooks-refresh' somewhere along the
+running `auto-mode-files-refresh' somewhere along the
 line in your .emacs || init.el
 
-This is to allow you to manually set `yf/major-mode-hooks-dir'
-without slowing down startup by calling `yf-major-mode-hooks-refresh',
+This is to allow you to manually set `auto-mode-files/mode-files-dir'
+without slowing down startup by calling `auto-mode-files-refresh',
 and to make clear that this should not be used in place of `require' on startup"
-  (or (yf-major-mode-hooks--run-symbol-internal symbol)
+  (or (auto-mode-files--run-symbol-internal symbol)
       (error (concat
-	      "Error: `yf-major-mode-hooks-run-symbol' could not find a file to match symbol "
+	      "Error: `auto-mode-files-run-symbol' could not find a file to match symbol "
 	      (symbol-name symbol)))))
 
 ;; symbol-name converts symbol to string nitwit
-(defun yf-edit-major-mode-hook (&optional mode)
+(defun auto-mode-files-edit-major-mode-hook (&optional mode)
   "Edit the hook file for the MODE major mode. 
 Current major mode if called by default or
 if called interactively
@@ -115,13 +115,13 @@ create the file with a newline followed by an appropriate
 provide statement. 
 
 The files take the form {name of MODE (sans -mode)}-hook.el
-in ${yf/major-mode-hooks-dir}/majorHooks
+in ${auto-mode-files/mode-files-dir}/majorHooks
 
 Note that this function does not check for the existance
 of require statements in major-mode-hooks.el"
   (interactive (list major-mode))
   (let* ((acting-mode-name (symbol-name mode))
-	 (major-mode-file-dir (file-truename yf/major-mode-hooks-dir))
+	 (major-mode-file-dir (file-truename auto-mode-files/mode-files-dir))
 	 (major-hooks-file (concat major-mode-file-dir "/major-mode-hooks.el"))
 	 (hook-file-path (concat major-mode-file-dir "/" acting-mode-name ".el")))
     (if (file-exists-p hook-file-path)
@@ -136,16 +136,16 @@ of require statements in major-mode-hooks.el"
       (forward-line -2)
       (save-buffer)
       (if (fboundp 'make-thread)
-	  (make-thread #'yf-major-mode-hooks--populate-table)
-	(yf-major-mode-hooks--populate-table)))))
+	  (make-thread #'auto-mode-files--populate-table)
+	(auto-mode-files--populate-table)))))
 
-(defun yf-major-mode-hooks--hook-func ()
-  "The function called by various hooks to load files from `yf/major-mode-hooks-dir'"
-  (mapc 'yf-major-mode-hooks--run-symbol-internal (append minor-mode-list (list major-mode))))
-(add-hook 'find-file-hook #'yf-major-mode-hooks--hook-func)
-(add-hook 'after-change-major-mode-hook #'yf-major-mode-hooks--hook-func)
+(defun auto-mode-files--hook-func ()
+  "The function called by various hooks to load files from `auto-mode-files/mode-files-dir'"
+  (mapc 'auto-mode-files--run-symbol-internal (append minor-mode-list (list major-mode))))
+(add-hook 'find-file-hook #'auto-mode-files--hook-func)
+(add-hook 'after-change-major-mode-hook #'auto-mode-files--hook-func)
 
-(defun helm-edit-mode-hook ()
+(defun helm-auto-mode-files-edit-mode-hook ()
   "A helmized way of editing a mode hook"
   (interactive)
   (helm :sources
