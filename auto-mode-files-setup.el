@@ -110,15 +110,15 @@ Current major mode if called by default or
 if called interactively
 
 If the file does not already exist, create it, add a
-requirement statement to major-mode-hooks.el and 
+requirement statement to auto-mode-files-setup.el and 
 create the file with a newline followed by an appropriate 
 provide statement. 
 
-The files take the form {name of MODE (sans -mode)}-hook.el
-in ${auto-mode-files/mode-files-dir}/majorHooks
+The files take the form {name of MODE (with -mode)}.el
+in ${auto-mode-files/mode-files-dir}/
 
 Note that this function does not check for the existance
-of require statements in major-mode-hooks.el"
+of require statements in auto-mode-files-setup.el"
   (interactive (list major-mode))
   (let* ((acting-mode-name (symbol-name mode))
 	 (major-mode-file-dir (file-truename auto-mode-files/mode-files-dir))
