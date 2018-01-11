@@ -10,7 +10,7 @@
 It should be noted that this function does nothing to actually populate
 said table; that should be done with `auto-mode-files--populate-table',
 usually called through `auto-mode-files-refresh'."
-  (unless (file-exists-p auto-mode-files/mode-files-dir) (make-directory yf/major-mode-hooks-dir))
+  (unless (file-exists-p auto-mode-files/mode-files-dir) (make-directory auto-mode-files/mode-files-dir))
   (let ((dir-list (directory-files auto-mode-files/mode-files-dir)))
     ;;Weakness determines the garbage collection rate;
     ;;key-and-value requires that both a key and value
