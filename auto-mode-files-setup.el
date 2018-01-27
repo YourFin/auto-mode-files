@@ -67,7 +67,7 @@ with `auto-mode-files--populate-table'."
   (interactive)
   ;; Flush out the old values to make
   ;; available for garbage collection
-  (clrhash auto-mode-files--table) 
+  (when auto-mode-files--table (clrhash auto-mode-files--table))
   ;; Make a new table to avoid a bunch
   ;; of resizing if the new set is massively bigger
   (setq auto-mode-files--table (auto-mode-files--make-table))
@@ -77,7 +77,7 @@ with `auto-mode-files--populate-table'."
 ;; To allow the user to set `auto-mode-files/mode-files-dir' after
 ;; loading this file and not have to worry about running
 ;; the refresh function twice on startup
-(add-hook 'after-init-hook 'auto-mode-files-refresh)
+(add-hook 'after-init-hook #'auto-mode-files-refresh)
 
 (defun auto-mode-files--run-symbol-internal (symbol)
   "Not to be used externally!
